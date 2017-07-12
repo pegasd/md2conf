@@ -10,6 +10,5 @@ require "md2conf"
 # require "pry"
 # Pry.start
 
-# require "irb"
-# IRB.start(__FILE__)
-print(Md2conf.parse_markdown('/home/vtyshkevich/RubymineProjects/puppet-system_base/README.md'))
+require "irb"
+IRB.start(__FILE__)
