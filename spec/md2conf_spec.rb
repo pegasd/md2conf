@@ -6,6 +6,9 @@ RSpec.describe Md2conf do
   end
 
   it 'does something useful' do
-    expect(false).to eq(true)
+    expect(Md2conf.parse_markdown(<<~MARKDOWN
+      # hello
+    MARKDOWN
+    )).to match(%r{^<h1>hello</h1>$})
   end
 end
