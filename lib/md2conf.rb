@@ -58,7 +58,7 @@ module Md2conf
       html        = html.gsub('<p>~!', note_tag).gsub('!~</p>', close_tag)
       html        = html.gsub('<p>~%', warning_tag).gsub('%~</p>', close_tag)
       html.scan(%r{<blockquote>(.*?)</blockquote>}m).each do |quote|
-        quote = quote.first
+        quote   = quote.first
         note    = quote.match(%r{^<.*>Note}m)
         warning = quote.match(%r{^<.*>Warning}m)
         if note
