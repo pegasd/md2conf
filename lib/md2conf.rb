@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'md2conf/version'
 require 'redcarpet'
 
@@ -7,10 +9,12 @@ module Md2conf
     # @return [String]
     def process_code_blocks(html)
       html.scan(%r{<pre><code.*?>.*?</code></pre>}m).each do |codeblock|
-        confluence_code = '<ac:structured-macro ac:name="code">'\
-          '<ac:parameter ac:name="theme">Midnight</ac:parameter>'\
-          '<ac:parameter ac:name="linenumbers">true</ac:parameter>'\
-          '<ac:parameter ac:name="language">'
+        confluence_code = <<~XML
+          <ac:structured-macro ac:name="code">
+          <ac:parameter ac:name="theme">Midnight</ac:parameter>
+          <ac:parameter ac:name="linenumbers">true</ac:parameter>
+          <ac:parameter ac:name="language">
+        XML
         lang            = codeblock.scan(/code class="(.*)"/)[0][0].gsub('puppet', 'ruby')
         lang            = 'none' if lang.nil?
         confluence_code = confluence_code + lang + '</ac:parameter>'
@@ -25,7 +29,7 @@ module Md2conf
 
     def process_mentions(html)
       html.scan(%r{@(\w+)}m).each do |mention|
-        mention = mention.first
+        mention         = mention.first
         confluence_code = "<ac:link><ri:user ri:username=\"#{mention}\"/></ac:link>"
         html            = html.gsub("@#{mention}", confluence_code)
       end
@@ -59,39 +63,43 @@ module Md2conf
     end
 
     def strip_type(tag, type)
-      tag = tag.strip.sub(/#{type}:\s/i, '')
-      tag = tag.strip.sub(/#{type}:\s:\s/i, '')
-      tag = tag.strip.sub(/<.*?>#{type}:\s<.*?>/i, '')
-      tag = tag.strip.sub(/<.*?>#{type}\s:\s<.*?>/i, '')
-      tag = tag.strip.sub(/<(em|strong)>#{type}:<.*?>\s/i, '')
-      tag = tag.strip.sub(/<(em|strong)>#{type}\s:<.*?>\s/i, '')
-      tag = tag.strip.sub(/<(em|strong)>#{type}<.*?>:\s/i, '')
-      tag.strip.sub(/<(em|strong)>#{type}\s<.*?>:\s/i, '')
+      tag
+        .sub(/#{type}:\s/i, '')
+        .sub(/#{type}:\s:\s/i, '')
+        .sub(/<.*?>#{type}:\s<.*?>/i, '')
+        .sub(/<.*?>#{type}\s:\s<.*?>/i, '')
+        .sub(/<(em|strong)>#{type}:<.*?>\s/i, '')
+        .sub(/<(em|strong)>#{type}\s:<.*?>\s/i, '')
+        .sub(/<(em|strong)>#{type}<.*?>:\s/i, '')
+        .sub(/<(em|strong)>#{type}\s<.*?>:\s/i, '')
     end
 
     def add_toc(html)
-      contents_markup = '<ac:structured-macro ac:name="toc">'\
-'<ac:parameter ac:name="printable">true</ac:parameter>'\
-'<ac:parameter ac:name="style">disc</ac:parameter>'\
-'<ac:parameter ac:name="maxLevel">2</ac:parameter>'\
-'<ac:parameter ac:name="minLevel">1</ac:parameter>'\
-'<ac:parameter ac:name="class">rm-contents</ac:parameter>'\
-'<ac:parameter ac:name="exclude"></ac:parameter>'\
-'<ac:parameter ac:name="type">list</ac:parameter>'\
-'<ac:parameter ac:name="outline">false</ac:parameter>'\
-'<ac:parameter ac:name="include"></ac:parameter>'\
-'</ac:structured-macro>'
+      contents_markup = <<~XML
+        <ac:structured-macro ac:name="toc">
+        <ac:parameter ac:name="printable">true</ac:parameter>
+        <ac:parameter ac:name="style">disc</ac:parameter>
+        <ac:parameter ac:name="maxLevel">2</ac:parameter>
+        <ac:parameter ac:name="minLevel">1</ac:parameter>
+        <ac:parameter ac:name="class">rm-contents</ac:parameter>
+        <ac:parameter ac:name="exclude"></ac:parameter>
+        <ac:parameter ac:name="type">list</ac:parameter>
+        <ac:parameter ac:name="outline">false</ac:parameter>
+        <ac:parameter ac:name="include"></ac:parameter>
+        </ac:structured-macro>
+      XML
+
       "#{contents_markup}\n#{html}"
     end
   end
 
-  def self.parse_markdown(filename)
-    markdown = Redcarpet::Markdown.new(Redcarpet::Render::XHTML.new, tables: true, fenced_code_blocks: true, autolink: true)
-    html     = markdown.render(File.read(filename))
-    confl    = SubMagic.new
-    html     = confl.convert_info_macros(html)
-    html     = confl.process_code_blocks(html)
-    html     = confl.process_mentions(html)
+  def self.parse_markdown(markdown)
+    md    = Redcarpet::Markdown.new(Redcarpet::Render::XHTML.new, tables: true, fenced_code_blocks: true, autolink: true)
+    html  = md.render(markdown)
+    confl = SubMagic.new
+    html  = confl.convert_info_macros(html)
+    html  = confl.process_code_blocks(html)
+    html  = confl.process_mentions(html)
     confl.add_toc(html)
   end
 end
