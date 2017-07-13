@@ -85,6 +85,21 @@ module Md2conf
       tag = tag.strip.sub(/<(em|strong)>#{type}\s<.*?>:\s/i, '')
       tag.upcase
     end
+
+    def add_toc(html)
+      contents_markup = '<ac:structured-macro ac:name="toc">'\
+'<ac:parameter ac:name="printable">true</ac:parameter>'\
+'<ac:parameter ac:name="style">disc</ac:parameter>'\
+'<ac:parameter ac:name="maxLevel">2</ac:parameter>'\
+'<ac:parameter ac:name="minLevel">1</ac:parameter>'\
+'<ac:parameter ac:name="class">rm-contents</ac:parameter>'\
+'<ac:parameter ac:name="exclude"></ac:parameter>'\
+'<ac:parameter ac:name="type">list</ac:parameter>'\
+'<ac:parameter ac:name="outline">false</ac:parameter>'\
+'<ac:parameter ac:name="include"></ac:parameter>'\
+'</ac:structured-macro>'
+      "#{contents_markup}\n#{html}"
+    end
   end
 
   def self.parse_markdown(filename)
@@ -94,6 +109,7 @@ module Md2conf
     html     = confl.convert_info_macros(html)
     html     = confl.process_code_blocks(html)
     html     = confl.process_mentions(html)
-    confl.process_refs(html)
+    html     = confl.process_refs(html)
+    confl.add_toc(html)
   end
 end

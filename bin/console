@@ -11,4 +11,5 @@ require "md2conf"
 # Pry.start
 
 require "irb"
-IRB.start(__FILE__)
+# IRB.start(__FILE__)
+puts Md2conf.parse_markdown ARGV[0]
