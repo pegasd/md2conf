@@ -32,24 +32,6 @@ module Md2conf
       html
     end
 
-    def process_refs(html)
-      html.scan(%r{\n(\[\^(\d)\].*)|<p>(\[\^(\d)\].*)}m).each do |ref|
-        if ref[0]
-          full_ref = ref[0].gsub('</p>', '').gsub('<p>', '')
-          ref_id   = ref[1]
-        else
-          full_ref = ref[2]
-          ref_id   = ref[3]
-        end
-        full_ref = full_ref.gsub('</p>', '').gsub('<p>', '')
-        html.gsub(full_ref, '')
-        href        = full_ref.scan(%r{href="(.*?)"}m)[0][0]
-        superscript = "<a id=\"test\" href=\"#{href}\"><sup>#{ref_id}</sup></a>"
-        html        = html.gsub(/[^#{ref_id}]/, superscript)
-      end
-      html
-    end
-
     def convert_info_macros(html)
       info_tag    = '<p><ac:structured-macro ac:name="info"><ac:rich-text-body><p>'
       note_tag    = info_tag.gsub('info', 'note')
@@ -110,7 +92,6 @@ module Md2conf
     html     = confl.convert_info_macros(html)
     html     = confl.process_code_blocks(html)
     html     = confl.process_mentions(html)
-    html     = confl.process_refs(html)
     confl.add_toc(html)
   end
 end
