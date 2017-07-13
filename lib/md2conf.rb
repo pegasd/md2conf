@@ -24,7 +24,8 @@ module Md2conf
     end
 
     def process_mentions(html)
-      html.scan(%r{@\w+}m).each do |mention|
+      html.scan(%r{@(\w+)}m).each do |mention|
+        mention = mention.first
         confluence_code = "<ac:link><ri:user ri:username=\"#{mention}\"/></ac:link>"
         html            = html.gsub(mention, confluence_code)
       end
@@ -103,7 +104,7 @@ module Md2conf
   end
 
   def self.parse_markdown(filename)
-    markdown = Redcarpet::Markdown.new(Redcarpet::Render::HTML.new, tables: true, fenced_code_blocks: true, autolink: true)
+    markdown = Redcarpet::Markdown.new(Redcarpet::Render::XHTML.new, tables: true, fenced_code_blocks: true, autolink: true)
     html     = markdown.render(File.read(filename))
     confl    = SubMagic.new
     html     = confl.convert_info_macros(html)
