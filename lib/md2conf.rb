@@ -24,7 +24,7 @@ module Md2conf
     end
 
     def process_mentions(html)
-      html.scan(%r{@(\w+)}m).each do |mention|
+      html.scan(%r{@\w+}m).each do |mention|
         confluence_code = "<ac:link><ri:user ri:username=\"#{mention}\"/></ac:link>"
         html            = html.gsub(mention, confluence_code)
       end
