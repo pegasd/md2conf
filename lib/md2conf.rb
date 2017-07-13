@@ -83,8 +83,7 @@ module Md2conf
       tag = tag.strip.sub(/<(em|strong)>#{type}:<.*?>\s/i, '')
       tag = tag.strip.sub(/<(em|strong)>#{type}\s:<.*?>\s/i, '')
       tag = tag.strip.sub(/<(em|strong)>#{type}<.*?>:\s/i, '')
-      tag = tag.strip.sub(/<(em|strong)>#{type}\s<.*?>:\s/i, '')
-      tag
+      tag.strip.sub(/<(em|strong)>#{type}\s<.*?>:\s/i, '')
     end
 
     def add_toc(html)
