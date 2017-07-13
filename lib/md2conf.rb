@@ -58,18 +58,19 @@ module Md2conf
       html        = html.gsub('<p>~!', note_tag).gsub('!~</p>', close_tag)
       html        = html.gsub('<p>~%', warning_tag).gsub('%~</p>', close_tag)
       html.scan(%r{<blockquote>(.*?)</blockquote>}m).each do |quote|
-        note    = quote.scan(%r{^<.*>Note}m)[0][0]
-        warning = quote.scan(%r{^<.*>Warning}m)[0][0]
+        quote   = quote.first
+        note    = quote.match(%r{^<.*>Note}m)
+        warning = quote.match(%r{^<.*>Warning}m)
         if note
           clean_tag = strip_type(quote, 'Note')
-          macro_tag = clean_tag.gsub('<p>', warning_tag).gsub('</p>', close_tag).strip
+          macro_tag = clean_tag.gsub(/<p>/i, warning_tag).gsub('</p>', close_tag).strip
         elsif warning
           clean_tag = strip_type(quote, 'Warning')
-          macro_tag = clean_tag.gsub('<p>', warning_tag).gsub('</p>', close_tag).strip
+          macro_tag = clean_tag.gsub(/<p>/i, warning_tag).gsub('</p>', close_tag).strip
         else
-          macro_tag = quote.gsub('<p>', info_tag).gsub('</p>', close_tag).strip
+          macro_tag = quote.gsub(/<p>/i, info_tag).gsub('</p>', close_tag).strip
         end
-        html = html.gsub("<blockquote>#{quote}</blockquote>", macro_tag)
+        html = html.gsub(/<blockquote>#{quote}<\/blockquote>/i, macro_tag)
       end
       html
     end
@@ -82,8 +83,7 @@ module Md2conf
       tag = tag.strip.sub(/<(em|strong)>#{type}:<.*?>\s/i, '')
       tag = tag.strip.sub(/<(em|strong)>#{type}\s:<.*?>\s/i, '')
       tag = tag.strip.sub(/<(em|strong)>#{type}<.*?>:\s/i, '')
-      tag = tag.strip.sub(/<(em|strong)>#{type}\s<.*?>:\s/i, '')
-      tag.upcase
+      tag.strip.sub(/<(em|strong)>#{type}\s<.*?>:\s/i, '')
     end
 
     def add_toc(html)
