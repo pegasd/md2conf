@@ -27,7 +27,7 @@ module Md2conf
       html.scan(%r{@(\w+)}m).each do |mention|
         mention = mention.first
         confluence_code = "<ac:link><ri:user ri:username=\"#{mention}\"/></ac:link>"
-        html            = html.gsub(mention, confluence_code)
+        html            = html.gsub("@#{mention}", confluence_code)
       end
       html
     end
