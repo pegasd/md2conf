@@ -15,8 +15,12 @@ module Md2conf
           <ac:parameter ac:name="linenumbers">true</ac:parameter>
           <ac:parameter ac:name="language">
         XML
-        lang            = codeblock.scan(/code class="(.*)"/)[0][0].gsub('puppet', 'ruby')
-        lang            = 'none' if lang.nil?
+        lang = codeblock.match(/code class="(.*)"/)
+        if lang.nil?
+          lang = 'none'
+        else
+          lang = codeblock.scan(/code class="(.*)"/)[0][0].gsub('puppet', 'ruby')
+        end
         confluence_code = confluence_code + lang + '</ac:parameter>'
         content         = codeblock.scan(%r{<pre><code.*?>(.*?)</code></pre>}m)[0][0]
         content         = '<ac:plain-text-body><![CDATA[' + content + ']]></ac:plain-text-body>'

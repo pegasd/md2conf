@@ -12,4 +12,4 @@ require 'md2conf'
 
 require 'irb'
 # IRB.start(__FILE__)
-puts Md2conf.parse_markdown File.read('../test.md')
+puts Md2conf.parse_markdown File.read('../README.md')
