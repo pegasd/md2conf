@@ -3,4 +3,4 @@
 require 'bundler/setup'
 require 'md2conf'
 
-puts Md2conf.parse_markdown File.read('../README.md')
+puts Md2conf.parse_markdown File.read(ARGV[0])

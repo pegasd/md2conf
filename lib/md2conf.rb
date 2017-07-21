@@ -1,7 +1,6 @@
-# frozen_string_literal: true
-
 require 'md2conf/version'
 require 'redcarpet'
+require 'cgi'
 
 module Md2conf
   class SubMagic
@@ -9,29 +8,23 @@ module Md2conf
     # @return [String]
     def process_code_blocks(html)
       html.scan(%r{<pre><code.*?>.*?</code></pre>}m).each do |codeblock|
-        confluence_code = <<~XML
-          <ac:structured-macro ac:name="code">
-          <ac:parameter ac:name="theme">Midnight</ac:parameter>
-          <ac:parameter ac:name="linenumbers">true</ac:parameter>
-          <ac:parameter ac:name="language">
-        XML
+        content = codeblock.match(%r{<pre><code.*?>(.*?)</code></pre>}m)[0]
         lang = codeblock.match(/code class="(.*)"/)
         if lang.nil?
           lang = 'none'
         else
-          lang = codeblock.scan(/code class="(.*)"/)[0][0].gsub('puppet', 'ruby')
+          lang = lang[0].sub('puppet', 'ruby')
         end
-        confluence_code = confluence_code + lang + '</ac:parameter>'
-        content         = codeblock.scan(%r{<pre><code.*?>(.*?)</code></pre>}m)[0][0]
-        content         = '<ac:plain-text-body><![CDATA[' + content + ']]></ac:plain-text-body>'
-        confluence_code = confluence_code + content + '</ac:structured-macro>'
-        confluence_code = confluence_code
-                          .gsub('&lt;', '<')
-                          .gsub('&gt;', '>')
-                          .gsub('&quot;', '"')
-                          .gsub('&amp;', '&')
-                          .gsub('&#39;', "'")
-        html            = html.gsub(codeblock, confluence_code)
+        confluence_code = <<~HTML
+          <ac:structured-macro ac:name="code">
+            <ac:parameter ac:name="theme">Midnight</ac:parameter>
+            <ac:parameter ac:name="linenumbers">true</ac:parameter>
+            <ac:parameter ac:name="language">#{lang}</ac:parameter>
+            <ac:plain-text-body><![CDATA[#{CGI::unescape_html content}]]></ac:plain-text-body>
+          </ac:structured-macro>
+        HTML
+
+        html = html.gsub(codeblock, confluence_code)
       end
       html
     end
