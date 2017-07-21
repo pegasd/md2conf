@@ -1,5 +1,11 @@
 AllCops:
   TargetRubyVersion: 2.3
 
-Style/ClosingParenthesesIndentation:
+Style/ClosingParenthesisIndentation:
   Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Metrics/MethodLength:
+  Max: 20

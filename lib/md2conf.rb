@@ -54,14 +54,14 @@ module Md2conf
         warning = quote.match(%r{^<.*>Warning}m)
         if note
           clean_tag = strip_type(quote, 'Note')
-          macro_tag = clean_tag.gsub(/<p>/i, warning_tag).gsub('</p>', close_tag).strip
+          macro_tag = clean_tag.gsub(/<p>/i, warning_tag).gsub(%r{</p>}, close_tag).strip
         elsif warning
           clean_tag = strip_type(quote, 'Warning')
-          macro_tag = clean_tag.gsub(/<p>/i, warning_tag).gsub('</p>', close_tag).strip
+          macro_tag = clean_tag.gsub(/<p>/i, warning_tag).gsub(%r{</p>}, close_tag).strip
         else
-          macro_tag = quote.gsub(/<p>/i, info_tag).gsub('</p>', close_tag).strip
+          macro_tag = quote.gsub(/<p>/i, info_tag).gsub(%r{</p>}, close_tag).strip
         end
-        html = html.gsub(/<blockquote>#{quote}<\/blockquote>/i, macro_tag)
+        html = html.gsub(%r{<blockquote>#{quote}</blockquote>}i, macro_tag)
       end
       html
     end
@@ -79,7 +79,7 @@ module Md2conf
     end
 
     def add_toc(html)
-      contents_markup = <<~XML
+      <<~HTML
         <ac:structured-macro ac:name="toc">
         <ac:parameter ac:name="printable">true</ac:parameter>
         <ac:parameter ac:name="style">disc</ac:parameter>
@@ -91,9 +91,8 @@ module Md2conf
         <ac:parameter ac:name="outline">false</ac:parameter>
         <ac:parameter ac:name="include"></ac:parameter>
         </ac:structured-macro>
-      XML
-
-      "#{contents_markup}\n#{html}"
+        #{html}
+      HTML
     end
   end
 
