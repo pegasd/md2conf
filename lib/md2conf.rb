@@ -8,8 +8,8 @@ module Md2conf
     # @return [String]
     def process_code_blocks(html)
       html.scan(%r{<pre><code.*?>.*?</code></pre>}m).each do |codeblock|
-        content = codeblock.match(%r{<pre><code.*?>(.*?)</code></pre>}m)[0]
-        lang = codeblock.match(/code class="(.*)"/)
+        content = codeblock.match(%r{<pre><code.*?>(.*?)</code></pre>}m)[1]
+        lang    = codeblock.match(/code class="(.*)"/)
         if lang.nil?
           lang = 'none'
         else
@@ -79,16 +79,17 @@ module Md2conf
     def add_toc(html)
       <<~HTML
         <ac:structured-macro ac:name="toc">
-        <ac:parameter ac:name="printable">true</ac:parameter>
-        <ac:parameter ac:name="style">disc</ac:parameter>
-        <ac:parameter ac:name="maxLevel">2</ac:parameter>
-        <ac:parameter ac:name="minLevel">1</ac:parameter>
-        <ac:parameter ac:name="class">rm-contents</ac:parameter>
-        <ac:parameter ac:name="exclude"></ac:parameter>
-        <ac:parameter ac:name="type">list</ac:parameter>
-        <ac:parameter ac:name="outline">false</ac:parameter>
-        <ac:parameter ac:name="include"></ac:parameter>
+          <ac:parameter ac:name="printable">true</ac:parameter>
+          <ac:parameter ac:name="style">disc</ac:parameter>
+          <ac:parameter ac:name="maxLevel">2</ac:parameter>
+          <ac:parameter ac:name="minLevel">1</ac:parameter>
+          <ac:parameter ac:name="class">rm-contents</ac:parameter>
+          <ac:parameter ac:name="exclude"></ac:parameter>
+          <ac:parameter ac:name="type">list</ac:parameter>
+          <ac:parameter ac:name="outline">false</ac:parameter>
+          <ac:parameter ac:name="include"></ac:parameter>
         </ac:structured-macro>
+
         #{html}
       HTML
     end
