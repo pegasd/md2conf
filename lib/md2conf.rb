@@ -25,7 +25,12 @@ module Md2conf
         content         = codeblock.scan(%r{<pre><code.*?>(.*?)</code></pre>}m)[0][0]
         content         = '<ac:plain-text-body><![CDATA[' + content + ']]></ac:plain-text-body>'
         confluence_code = confluence_code + content + '</ac:structured-macro>'
-        confluence_code = confluence_code.gsub('&lt;', '<').gsub('&gt;', '>').gsub('&quot;', '"').gsub('&amp;', '&')
+        confluence_code = confluence_code
+                          .gsub('&lt;', '<')
+                          .gsub('&gt;', '>')
+                          .gsub('&quot;', '"')
+                          .gsub('&amp;', '&')
+                          .gsub('&#39;', "'")
         html            = html.gsub(codeblock, confluence_code)
       end
       html
