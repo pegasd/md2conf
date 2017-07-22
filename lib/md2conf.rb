@@ -78,16 +78,7 @@ module Md2conf
 
     def add_toc(html)
       <<~HTML
-        <ac:structured-macro ac:name="toc">
-          <ac:parameter ac:name="printable">true</ac:parameter>
-          <ac:parameter ac:name="style">disc</ac:parameter>
-          <ac:parameter ac:name="maxLevel">2</ac:parameter>
-          <ac:parameter ac:name="minLevel">1</ac:parameter>
-          <ac:parameter ac:name="class">rm-contents</ac:parameter>
-          <ac:parameter ac:name="type">list</ac:parameter>
-          <ac:parameter ac:name="outline">false</ac:parameter>
-        </ac:structured-macro>
-
+        <ac:structured-macro ac:name="toc" />
         #{html}
       HTML
     end
