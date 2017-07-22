@@ -13,14 +13,14 @@ module Md2conf
         if lang.nil?
           lang = 'none'
         else
-          lang = lang[0].sub('puppet', 'ruby')
+          lang = lang[1].sub('puppet', 'ruby')
         end
         confluence_code = <<~HTML
           <ac:structured-macro ac:name="code">
-            <ac:parameter ac:name="theme">Midnight</ac:parameter>
+            <ac:parameter ac:name="theme">RDark</ac:parameter>
             <ac:parameter ac:name="linenumbers">true</ac:parameter>
             <ac:parameter ac:name="language">#{lang}</ac:parameter>
-            <ac:plain-text-body><![CDATA[#{CGI::unescape_html content}]]></ac:plain-text-body>
+            <ac:plain-text-body><![CDATA[#{CGI.unescape_html content}]]></ac:plain-text-body>
           </ac:structured-macro>
         HTML
 
@@ -84,10 +84,8 @@ module Md2conf
           <ac:parameter ac:name="maxLevel">2</ac:parameter>
           <ac:parameter ac:name="minLevel">1</ac:parameter>
           <ac:parameter ac:name="class">rm-contents</ac:parameter>
-          <ac:parameter ac:name="exclude"></ac:parameter>
           <ac:parameter ac:name="type">list</ac:parameter>
           <ac:parameter ac:name="outline">false</ac:parameter>
-          <ac:parameter ac:name="include"></ac:parameter>
         </ac:structured-macro>
 
         #{html}
