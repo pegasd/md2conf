@@ -8,13 +8,13 @@ module Md2conf
     # @return [String]
     def process_code_blocks(html)
       html.scan(%r{<pre><code.*?>.*?</code></pre>}m).each do |codeblock|
-        content = codeblock.match(%r{<pre><code.*?>(.*?)</code></pre>}m)[1]
-        lang    = codeblock.match(/code class="(.*)"/)
-        if lang.nil?
-          lang = 'none'
-        else
-          lang = lang[1].sub('puppet', 'ruby')
-        end
+        content         = codeblock.match(%r{<pre><code.*?>(.*?)</code></pre>}m)[1]
+        lang            = codeblock.match(/code class="(.*)"/)
+        lang            = if lang.nil?
+                            'none'
+                          else
+                            lang[1].sub('puppet', 'ruby')
+                          end
         confluence_code = <<~HTML
           <ac:structured-macro ac:name="code">
             <ac:parameter ac:name="theme">RDark</ac:parameter>
@@ -30,7 +30,7 @@ module Md2conf
     end
 
     def process_mentions(html)
-      html.scan(%r{@(\w+)}m).each do |mention|
+      html.scan(/@(\w+)/m).each do |mention|
         mention         = mention.first
         confluence_code = "<ac:link><ri:user ri:username=\"#{mention}\"/></ac:link>"
         html            = html.gsub("@#{mention}", confluence_code)
@@ -48,8 +48,8 @@ module Md2conf
       html        = html.gsub('<p>~%', warning_tag).gsub('%~</p>', close_tag)
       html.scan(%r{<blockquote>(.*?)</blockquote>}m).each do |quote|
         quote   = quote.first
-        note    = quote.match(%r{^<.*>Note}m)
-        warning = quote.match(%r{^<.*>Warning}m)
+        note    = quote.match(/^<.*>Note/m)
+        warning = quote.match(/^<.*>Warning/m)
         if note
           clean_tag = strip_type(quote, 'Note')
           macro_tag = clean_tag.gsub(/<p>/i, warning_tag).gsub(%r{</p>}, close_tag).strip
@@ -84,7 +84,12 @@ module Md2conf
     end
   end
 
-  def self.parse_markdown(markdown)
+  def self.parse_markdown(markdown, options = {})
+    cut_header = options[:cut_header] || true
+    if cut_header && markdown.start_with?('# ')
+      markdown = markdown.lines.drop(1).join
+    end
+
     md    = Redcarpet::Markdown.new(Redcarpet::Render::XHTML.new, tables: true, fenced_code_blocks: true, autolink: true)
     html  = md.render(markdown)
     confl = SubMagic.new
