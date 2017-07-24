@@ -84,8 +84,8 @@ module Md2conf
     end
   end
 
-  def self.parse_markdown(markdown, options = {})
-    cut_header = options[:cut_header] || true
+  def self.parse_markdown(markdown, opts = {})
+    cut_header = opts.key?(:cut_header) ? opts[:cut_header] : true
     if cut_header && markdown.start_with?('# ')
       markdown = markdown.lines.drop(1).join
     end

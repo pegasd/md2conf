@@ -5,10 +5,13 @@ RSpec.describe Md2conf do
     expect(Md2conf::VERSION).not_to be nil
   end
 
-  it 'does something useful' do
-    expect(Md2conf.parse_markdown(<<~MARKDOWN
-      # hello
-    MARKDOWN
-    )).to match(%r{^<h1>hello</h1>$})
+  it 'cuts the header properly' do
+    expect(Md2conf.parse_markdown("# hello\n## there"))
+      .not_to match(/hello/)
+  end
+
+  it 'works without ' do
+    expect(Md2conf.parse_markdown('# hello', cut_header: false))
+      .to match(%r{^<h1>hello</h1>$})
   end
 end
