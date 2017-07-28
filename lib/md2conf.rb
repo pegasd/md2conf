@@ -11,10 +11,10 @@ module Md2conf
         content         = codeblock.match(%r{<pre><code.*?>(.*?)</code></pre>}m)[1]
         lang            = codeblock.match(/code class="(.*)"/)
         lang            = if lang.nil?
-                            'none'
-                          else
-                            lang[1].sub('puppet', 'ruby')
-                          end
+          'none'
+        else
+          lang[1].sub('puppet', 'ruby')
+        end
         confluence_code = <<~HTML
           <ac:structured-macro ac:name="code">
             <ac:parameter ac:name="theme">RDark</ac:parameter>
@@ -76,16 +76,17 @@ module Md2conf
         .sub(/<(em|strong)>#{type}\s<.*?>:\s/i, '')
     end
 
-    def add_toc(html)
+    def add_toc(html, max_toc_level)
       <<~HTML
-        <ac:structured-macro ac:name="toc" />
+        <ac:structured-macro ac:name="toc">
+          <ac:parameter ac:name="maxLevel">#{max_toc_level}</ac:parameter>
+        </ac:structured-macro>
         #{html}
       HTML
     end
   end
 
-  def self.parse_markdown(markdown, opts = {})
-    cut_header = opts.key?(:cut_header) ? opts[:cut_header] : true
+  def self.parse_markdown(markdown, cut_header: true, max_toc_level: 7)
     if cut_header && markdown.start_with?('# ')
       markdown = markdown.lines.drop(1).join
     end
@@ -96,6 +97,6 @@ module Md2conf
     html  = confl.convert_info_macros(html)
     html  = confl.process_code_blocks(html)
     html  = confl.process_mentions(html)
-    confl.add_toc(html)
+    confl.add_toc(html, max_toc_level)
   end
 end
