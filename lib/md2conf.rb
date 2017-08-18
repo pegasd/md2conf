@@ -30,7 +30,8 @@ module Md2conf
     end
 
     def process_mentions(html)
-      html.scan(/@(\w+)/m).each do |mention|
+      clean_html = html.gsub(%r{<code.*?>.*?</code>}m, '')
+      clean_html.scan(/@(\w+)/m).each do |mention|
         mention         = mention.first
         confluence_code = "<ac:link><ri:user ri:username=\"#{mention}\"/></ac:link>"
         html            = html.gsub("@#{mention}", confluence_code)
@@ -94,9 +95,9 @@ module Md2conf
     md    = Redcarpet::Markdown.new(Redcarpet::Render::XHTML.new, tables: true, fenced_code_blocks: true, autolink: true)
     html  = md.render(markdown)
     confl = SubMagic.new
+    html  = confl.process_mentions(html)
     html  = confl.convert_info_macros(html)
     html  = confl.process_code_blocks(html)
-    html  = confl.process_mentions(html)
     confl.add_toc(html, max_toc_level)
   end
 end
