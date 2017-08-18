@@ -40,6 +40,7 @@ module Md2conf
     end
 
     def convert_info_macros(html)
+      clean_html  = html.gsub(%r{<code.*?>.*?</code>}m, '')
       info_tag    = '<p><ac:structured-macro ac:name="info"><ac:rich-text-body><p>'
       note_tag    = info_tag.gsub('info', 'note')
       warning_tag = info_tag.gsub('info', 'warning')
@@ -47,7 +48,7 @@ module Md2conf
       html        = html.gsub('<p>~?', info_tag).gsub('?~</p>', close_tag)
       html        = html.gsub('<p>~!', note_tag).gsub('!~</p>', close_tag)
       html        = html.gsub('<p>~%', warning_tag).gsub('%~</p>', close_tag)
-      html.scan(%r{<blockquote>(.*?)</blockquote>}m).each do |quote|
+      clean_html.scan(%r{<blockquote>(.*?)</blockquote>}m).each do |quote|
         quote   = quote.first
         note    = quote.match(/^<.*>Note/m)
         warning = quote.match(/^<.*>Warning/m)
