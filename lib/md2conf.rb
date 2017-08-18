@@ -52,7 +52,7 @@ module Md2conf
         warning = quote.match(/^<.*>Warning/m)
         if note
           clean_tag = strip_type(quote, 'Note')
-          macro_tag = clean_tag.gsub(/<p>/i, warning_tag).gsub(%r{</p>}, close_tag).strip
+          macro_tag = clean_tag.gsub(/<p>/i, note_tag).gsub(%r{</p>}, close_tag).strip
         elsif warning
           clean_tag = strip_type(quote, 'Warning')
           macro_tag = clean_tag.gsub(/<p>/i, warning_tag).gsub(%r{</p>}, close_tag).strip
