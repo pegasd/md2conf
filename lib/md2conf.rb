@@ -3,18 +3,30 @@ require 'redcarpet'
 require 'cgi'
 
 module Md2conf
-  class SubMagic
-    # @param [String] html
-    # @return [String]
-    def process_code_blocks(html)
-      html.scan(%r{<pre><code.*?>.*?</code></pre>}m).each do |codeblock|
-        content         = codeblock.match(%r{<pre><code.*?>(.*?)</code></pre>}m)[1]
-        lang            = codeblock.match(/code class="(.*)"/)
-        lang            = if lang.nil?
+  class ConfluenceUtil
+    def initialize(html)
+      @html = html
+    end
+
+    def parse(max_toc_level)
+      process_mentions
+      convert_info_macros
+      process_code_blocks
+      add_toc max_toc_level
+
+      @html
+    end
+
+    def process_code_blocks
+      @html.scan(%r{<pre><code.*?>.*?</code></pre>}m).each do |codeblock|
+        content = codeblock.match(%r{<pre><code.*?>(.*?)</code></pre>}m)[1]
+        lang    = codeblock.match(/code class="(.*)"/)
+        lang    = if lang.nil?
           'none'
         else
           lang[1].sub('puppet', 'ruby')
         end
+
         confluence_code = <<~HTML
           <ac:structured-macro ac:name="code">
             <ac:parameter ac:name="theme">RDark</ac:parameter>
@@ -24,22 +36,20 @@ module Md2conf
           </ac:structured-macro>
         HTML
 
-        html = html.gsub(codeblock, confluence_code)
+        @html.sub! codeblock, confluence_code
       end
-      html
     end
 
-    def process_mentions(html)
-      clean_html = html.gsub(%r{<code.*?>.*?</code>}m, '')
+    def process_mentions
+      clean_html = @html.gsub(%r{<code.*?>.*?</code>}m, '')
       clean_html.scan(/@(\w+)/m).each do |mention|
         mention         = mention.first
         confluence_code = "<ac:link><ri:user ri:username=\"#{mention}\"/></ac:link>"
-        html            = html.gsub("@#{mention}", confluence_code)
+        @html.gsub! "@#{mention}", confluence_code
       end
-      html
     end
 
-    def convert_info_macros(html)
+    def convert_info_macros
       confluence_code = <<~HTML
         <ac:structured-macro ac:name="%{macro_name}">
           <ac:rich-text-body>
@@ -48,7 +58,7 @@ module Md2conf
         </ac:structured-macro>
       HTML
 
-      html.scan(%r{<blockquote>(.*?)</blockquote>}m).each do |quote|
+      @html.scan(%r{<blockquote>(.*?)</blockquote>}m).each do |quote|
         quote = quote.first
         if quote.include? 'Note: '
           quote_new  = quote.strip.sub 'Note: ', ''
@@ -60,18 +70,16 @@ module Md2conf
           quote_new  = quote.strip
           macro_name = 'info'
         end
-        html.sub! %r{<blockquote>#{quote}</blockquote>}m, confluence_code % { macro_name: macro_name, quote: quote_new }
+        @html.sub! %r{<blockquote>#{quote}</blockquote>}m, confluence_code % { macro_name: macro_name, quote: quote_new }
       end
-      html
     end
 
-
-    def add_toc(html, max_toc_level)
-      <<~HTML
+    def add_toc(max_toc_level)
+      @html = <<~HTML
         <ac:structured-macro ac:name="toc">
           <ac:parameter ac:name="maxLevel">#{max_toc_level}</ac:parameter>
         </ac:structured-macro>
-        #{html}
+        #{@html}
       HTML
     end
   end
@@ -81,12 +89,9 @@ module Md2conf
       markdown = markdown.lines.drop(1).join
     end
 
-    md    = Redcarpet::Markdown.new(Redcarpet::Render::XHTML.new, tables: true, fenced_code_blocks: true, autolink: true)
-    html  = md.render(markdown)
-    confl = SubMagic.new
-    html  = confl.process_mentions(html)
-    html  = confl.convert_info_macros(html)
-    html  = confl.process_code_blocks(html)
-    confl.add_toc(html, max_toc_level)
+    md         = Redcarpet::Markdown.new(Redcarpet::Render::XHTML.new, tables: true, fenced_code_blocks: true, autolink: true)
+    html       = md.render(markdown)
+    confluence = ConfluenceUtil.new(html)
+    confluence.parse(max_toc_level)
   end
 end
