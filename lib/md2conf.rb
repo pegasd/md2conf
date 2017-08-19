@@ -40,43 +40,31 @@ module Md2conf
     end
 
     def convert_info_macros(html)
-      clean_html  = html.gsub(%r{<code.*?>.*?</code>}m, '')
-      info_tag    = '<p><ac:structured-macro ac:name="info"><ac:rich-text-body><p>'
-      note_tag    = info_tag.gsub('info', 'note')
-      warning_tag = info_tag.gsub('info', 'warning')
-      close_tag   = '</p></ac:rich-text-body></ac:structured-macro></p>'
-      html        = html.gsub('<p>~?', info_tag).gsub('?~</p>', close_tag)
-      html        = html.gsub('<p>~!', note_tag).gsub('!~</p>', close_tag)
-      html        = html.gsub('<p>~%', warning_tag).gsub('%~</p>', close_tag)
-      clean_html.scan(%r{<blockquote>(.*?)</blockquote>}m).each do |quote|
-        quote   = quote.first
-        note    = quote.match(/^<.*>Note/m)
-        warning = quote.match(/^<.*>Warning/m)
-        if note
-          clean_tag = strip_type(quote, 'Note')
-          macro_tag = clean_tag.gsub(/<p>/i, note_tag).gsub(%r{</p>}, close_tag).strip
-        elsif warning
-          clean_tag = strip_type(quote, 'Warning')
-          macro_tag = clean_tag.gsub(/<p>/i, warning_tag).gsub(%r{</p>}, close_tag).strip
+      confluence_code = <<~HTML
+        <ac:structured-macro ac:name="%{macro_name}">
+          <ac:rich-text-body>
+            %{quote}
+          </ac:rich-text-body>
+        </ac:structured-macro>
+      HTML
+
+      html.scan(%r{<blockquote>(.*?)</blockquote>}m).each do |quote|
+        quote = quote.first
+        if quote.include? 'Note: '
+          quote_new  = quote.strip.sub 'Note: ', ''
+          macro_name = 'note'
+        elsif quote.include? 'Warning: '
+          quote_new  = quote.strip.sub 'Warning: ', ''
+          macro_name = 'warning'
         else
-          macro_tag = quote.gsub(/<p>/i, info_tag).gsub(%r{</p>}, close_tag).strip
+          quote_new  = quote.strip
+          macro_name = 'info'
         end
-        html = html.gsub(%r{<blockquote>#{quote}</blockquote>}i, macro_tag)
+        html.sub! %r{<blockquote>#{quote}</blockquote>}m, confluence_code % { macro_name: macro_name, quote: quote_new }
       end
       html
     end
 
-    def strip_type(tag, type)
-      tag
-        .sub(/#{type}:\s/i, '')
-        .sub(/#{type}:\s:\s/i, '')
-        .sub(/<.*?>#{type}:\s<.*?>/i, '')
-        .sub(/<.*?>#{type}\s:\s<.*?>/i, '')
-        .sub(/<(em|strong)>#{type}:<.*?>\s/i, '')
-        .sub(/<(em|strong)>#{type}\s:<.*?>\s/i, '')
-        .sub(/<(em|strong)>#{type}<.*?>:\s/i, '')
-        .sub(/<(em|strong)>#{type}\s<.*?>:\s/i, '')
-    end
 
     def add_toc(html, max_toc_level)
       <<~HTML
