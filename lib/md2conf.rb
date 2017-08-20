@@ -4,49 +4,47 @@ require 'cgi'
 
 module Md2conf
   class ConfluenceUtil
-    def initialize(html)
-      @html = html
+    def initialize(html, max_toc_level)
+      @html          = html
+      @max_toc_level = max_toc_level
     end
 
-    def parse(max_toc_level)
+    def parse
       process_mentions
       convert_info_macros
       process_code_blocks
-      add_toc max_toc_level
+      add_toc
 
       @html
     end
 
-    def process_code_blocks
-      @html.scan(%r{<pre><code.*?>.*?</code></pre>}m).each do |codeblock|
-        content = codeblock.match(%r{<pre><code.*?>(.*?)</code></pre>}m)[1]
-        lang    = codeblock.match(/code class="(.*)"/)
-        lang    = if lang.nil?
-          'none'
-        else
-          lang[1].sub('puppet', 'ruby')
-        end
+    def process_mentions
+      html_new      = ''
+      last_position = 0
+      @html.scan /@(\w+)/ do |mention|
+        next if inside_code_block Regexp.last_match.pre_match
 
-        confluence_code = <<~HTML
-          <ac:structured-macro ac:name="code">
-            <ac:parameter ac:name="theme">RDark</ac:parameter>
-            <ac:parameter ac:name="linenumbers">true</ac:parameter>
-            <ac:parameter ac:name="language">#{lang}</ac:parameter>
-            <ac:plain-text-body><![CDATA[#{CGI.unescape_html content}]]></ac:plain-text-body>
-          </ac:structured-macro>
-        HTML
-
-        @html.sub! codeblock, confluence_code
+        confluence_code  = "<ac:link><ri:user ri:username=\"#{mention.first}\"/></ac:link>"
+        since_last_match = @html[last_position..Regexp.last_match.begin(0) - 1]
+        html_new << "#{since_last_match}#{confluence_code}"
+        last_position = Regexp.last_match.end(1)
       end
+
+      html_new << $'
+      @html = html_new
     end
 
-    def process_mentions
-      clean_html = @html.gsub(%r{<code.*?>.*?</code>}m, '')
-      clean_html.scan(/@(\w+)/m).each do |mention|
-        mention         = mention.first
-        confluence_code = "<ac:link><ri:user ri:username=\"#{mention}\"/></ac:link>"
-        @html.gsub! "@#{mention}", confluence_code
-      end
+    private
+    def inside_code_block(pre_match)
+      # *
+      return false unless pre_match.include? '<code'
+
+      # <code> *
+      return true unless pre_match.include? '</code>'
+
+      # <code></code> *
+      # <code></code><code> *
+      pre_match.rindex('<code') > pre_match.rindex('</code>')
     end
 
     def convert_info_macros
@@ -74,10 +72,33 @@ module Md2conf
       end
     end
 
-    def add_toc(max_toc_level)
+    def process_code_blocks
+      @html.scan(%r{<pre><code.*?>.*?</code></pre>}m).each do |codeblock|
+        content = codeblock.match(%r{<pre><code.*?>(.*?)</code></pre>}m)[1]
+        lang    = codeblock.match(/code class="(.*)"/)
+        lang    = if lang.nil?
+          'none'
+        else
+          lang[1].sub('puppet', 'ruby')
+        end
+
+        confluence_code = <<~HTML
+          <ac:structured-macro ac:name="code">
+            <ac:parameter ac:name="theme">RDark</ac:parameter>
+            <ac:parameter ac:name="linenumbers">true</ac:parameter>
+            <ac:parameter ac:name="language">#{lang}</ac:parameter>
+            <ac:plain-text-body><![CDATA[#{CGI.unescape_html content}]]></ac:plain-text-body>
+          </ac:structured-macro>
+        HTML
+
+        @html.sub! codeblock, confluence_code
+      end
+    end
+
+    def add_toc
       @html = <<~HTML
         <ac:structured-macro ac:name="toc">
-          <ac:parameter ac:name="maxLevel">#{max_toc_level}</ac:parameter>
+          <ac:parameter ac:name="maxLevel">#{@max_toc_level}</ac:parameter>
         </ac:structured-macro>
         #{@html}
       HTML
@@ -91,7 +112,7 @@ module Md2conf
 
     md         = Redcarpet::Markdown.new(Redcarpet::Render::XHTML.new, tables: true, fenced_code_blocks: true, autolink: true)
     html       = md.render(markdown)
-    confluence = ConfluenceUtil.new(html)
-    confluence.parse(max_toc_level)
+    confluence = ConfluenceUtil.new(html, max_toc_level)
+    confluence.parse
   end
 end
