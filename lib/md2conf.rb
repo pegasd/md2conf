@@ -30,8 +30,13 @@ module Md2conf
         last_position = Regexp.last_match.end(1)
       end
 
-      html_new << $'
-      @html = html_new
+      if Regexp.last_match
+        if inside_code_block Regexp.last_match.pre_match
+          @html = html_new << @html[last_position..-1]
+        else
+          @html = html_new << Regexp.last_match.post_match
+        end
+      end
     end
 
     private

@@ -19,4 +19,23 @@ RSpec.describe Md2conf do
     expect(Md2conf.parse_markdown('# hello', max_toc_level: 2))
       .to match(%r{^\s*<ac:parameter ac:name="maxLevel">2</ac:parameter>$})
   end
+
+  it 'only processes usernames outside of code blocks' do
+    md = <<~MARKDOWN
+      # users
+
+      @user
+
+      `@dontparseme`
+
+      ```
+      @meneither
+      ```
+    MARKDOWN
+    md_parsed = Md2conf.parse_markdown(md)
+
+    expect(md_parsed).to match(/ri:username="user"/)
+    expect(md_parsed).to match(%r{<code>@dontparseme</code>})
+    expect(md_parsed).to match(%r{@meneither})
+  end
 end
