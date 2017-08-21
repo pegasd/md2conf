@@ -96,7 +96,7 @@ module Md2conf
           quote_new  = quote.strip
           macro_name = 'info'
         end
-        @html.sub! %r{<blockquote>#{quote}</blockquote>}m, format(confluence_code, macro_name: macro_name, quote: quote_new)
+        @html.sub! "<blockquote>#{quote}</blockquote>", format(confluence_code, macro_name: macro_name, quote: quote_new)
       end
     end
 
