@@ -51,20 +51,6 @@ module Md2conf
       end
     end
 
-    private
-    # Check whether we're inside a code block based on pre_match variable.
-    def inside_code_block(pre_match)
-      # *
-      return false unless pre_match.include? '<code'
-
-      # <code> *
-      return true unless pre_match.include? '</code>'
-
-      # <code></code> *
-      # <code></code><code> *
-      pre_match.rindex('<code') > pre_match.rindex('</code>')
-    end
-
     # Convert Info macros to Confluence-friendly format:
     #
     # @example Regular informational message
@@ -137,6 +123,21 @@ module Md2conf
         </ac:structured-macro>
         #{@html}
       HTML
+    end
+
+    private
+
+    # Check whether we're inside a code block based on pre_match variable.
+    def inside_code_block(pre_match)
+      # *
+      return false unless pre_match.include? '<code'
+
+      # <code> *
+      return true unless pre_match.include? '</code>'
+
+      # <code></code> *
+      # <code></code><code> *
+      pre_match.rindex('<code') > pre_match.rindex('</code>')
     end
   end
 
