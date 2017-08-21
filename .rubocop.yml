@@ -1,11 +1,33 @@
+---
 AllCops:
-  TargetRubyVersion: 2.3
-
+  TargetRubyVersion: 2.4
+  Exclude:
+  - bin/*
+  - spec/fixtures/**/*
 Style/ClosingParenthesisIndentation:
   Enabled: false
-
 Style/FrozenStringLiteralComment:
   Enabled: false
-
+Style/TrailingCommaInLiteral:
+  Description: Prefer always trailing comma on multiline literals. This makes diffs,
+    and re-ordering nicer.
+  EnforcedStyleForMultiline: comma
+Metrics/AbcSize:
+   Enabled: false
+Metrics/BlockLength:
+  Enabled: false
+Metrics/ClassLength:
+  Enabled: false
+Metrics/CyclomaticComplexity:
+  Enabled: false
 Metrics/MethodLength:
-  Max: 20
+  Enabled: false
+Metrics/ModuleLength:
+  Enabled: false
+Metrics/ParameterLists:
+  Enabled: false
+Metrics/PerceivedComplexity:
+  Enabled: false
+Metrics/LineLength:
+  Description: People have wide screens, use them.
+  Max: 140
