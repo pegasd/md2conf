@@ -30,12 +30,16 @@ RSpec.describe Md2conf do
 
       ```
       @meneither
+
+      # I'll stay unparsed even though there's a @user outside
+      @user
       ```
     MARKDOWN
     md_parsed = Md2conf.parse_markdown(md)
 
     expect(md_parsed).to match(/ri:username="user"/)
-    expect(md_parsed).to match(%r{<code>@dontparseme</code>})
+    expect(md_parsed).to match(%r{^<p><code>@dontparseme</code></p>$})
     expect(md_parsed).to match(%r{@meneither})
+    expect(md_parsed).to match(%r{^@user$})
   end
 end
