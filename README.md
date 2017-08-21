@@ -12,18 +12,26 @@ gem 'md2conf'
 
 And then execute:
 
-    $ bundle
+```bash
+$ bundle
+```
 
 Or install it yourself as:
 
-    $ gem install md2conf
+```bash
+$ gem install md2conf
+```
 
 ## Usage
 
 ```ruby
 require 'md2conf'
-Md2conf.parse_markdown('./README.md')
+
+conf_xhtml = Md2conf.parse_markdown(File.read('./README.md'))
 ```
+
+Contents of `conf_xhtml` is now ready to be pushed to Confluence.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
