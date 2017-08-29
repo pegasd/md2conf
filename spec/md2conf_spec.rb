@@ -39,7 +39,25 @@ RSpec.describe Md2conf do
 
     expect(md_parsed).to match(/ri:username="user"/)
     expect(md_parsed).to match(%r{^<p><code>@dontparseme</code></p>$})
-    expect(md_parsed).to match(%r{@meneither})
-    expect(md_parsed).to match(%r{^@user$})
+    expect(md_parsed).to match(/@meneither/)
+    expect(md_parsed).to match(/^@user$/)
+  end
+
+  it 'converts macros with arguments' do
+    md = '{RT:12345}'
+    expect(
+      Md2conf.parse_markdown(md, config_file: 'spec/fixtures/config.yaml')
+    ).to match(
+      %r{https://mycompany\.org/rt/Display\.html\?id=12345}
+    )
+  end
+
+  it 'converts macros without arguments' do
+    md = '{HEY}'
+    expect(
+      Md2conf.parse_markdown(md, config_file: 'spec/fixtures/config.yaml')
+    ).to match(
+      /hello/
+    )
   end
 end

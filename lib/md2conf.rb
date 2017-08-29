@@ -1,6 +1,7 @@
 require 'md2conf/version'
 require 'redcarpet'
 require 'cgi'
+require 'yaml'
 
 # Processes markdown and converts it to Confluence Storage Format.
 #
@@ -11,19 +12,56 @@ module Md2conf
   class ConfluenceUtil
     # @param [String] html XHTML rendered by redcarpet gem (must have fenced code blocks).
     # @param [Integer] max_toc_level Table of Contents maximum header depth.
-    def initialize(html, max_toc_level)
+    def initialize(html, max_toc_level, config_file)
       @html          = html
       @max_toc_level = max_toc_level
+      return unless File.file?(File.expand_path(config_file))
+      @config = YAML.load_file(File.expand_path(config_file))
+      return unless @config.key? 'macros'
+      @macros = @config['macros']
     end
 
     # Launch all internal parsers.
     def parse
+      process_macros if @macros
       process_mentions
       convert_info_macros
       process_code_blocks
       add_toc
 
       @html
+    end
+
+    # Process custom macros. Macro definitions should be placed in `~/.md2conf.yaml`.
+    # Format is described in the README.
+    #
+    # Macros are blocks that are contained in curly braces like this: `{JIRA:52837}`.
+    def process_macros
+      html_new      = ''
+      last_position = 0
+      @html.scan(/{(.*?)}/) do |macro|
+        next if inside_code_block Regexp.last_match.pre_match
+        macro_name = macro.first.split(':')[0]
+        macro_arg  = macro.first.split(':')[1]
+
+        confluence_code = if @macros.include? macro_name
+          @macros[macro_name] % { arg: macro_arg }
+        else
+          "<code>#{macro.first}</code>"
+        end
+
+        since_last_match = @html[last_position..Regexp.last_match.begin(0) - 1]
+        html_new << "#{since_last_match}#{confluence_code}"
+        last_position = Regexp.last_match.end(1)
+      end
+
+      # Did we have at least one match?
+      return unless Regexp.last_match
+      @html = html_new << if inside_code_block Regexp.last_match.pre_match
+        @html[last_position..-1]
+      else
+        Regexp.last_match.post_match
+      end
     end
 
     # Process username mentions.
@@ -149,14 +187,14 @@ module Md2conf
   # @param [Integer] max_toc_level Table of Contents maximum header depth.
   #
   # @return [String] Confluence Storage Format document.
-  def self.parse_markdown(markdown, cut_header: true, max_toc_level: 7)
+  def self.parse_markdown(markdown, cut_header: true, max_toc_level: 7, config_file: '~/.md2conf.yaml')
     if cut_header && markdown.start_with?('# ')
       markdown = markdown.lines.drop(1).join
     end
 
     md         = Redcarpet::Markdown.new(Redcarpet::Render::XHTML.new, tables: true, fenced_code_blocks: true, autolink: true)
     html       = md.render(markdown)
-    confluence = ConfluenceUtil.new(html, max_toc_level)
+    confluence = ConfluenceUtil.new(html, max_toc_level, config_file)
     confluence.parse
   end
 end

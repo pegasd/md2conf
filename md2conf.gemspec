@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.summary       = 'Convert Markdown to Confluence XHTML storage format'
   spec.homepage      = 'https://github.com/pegasd/md2conf'
   spec.license       = 'MIT'
-  spec.files         = Dir['README.md', 'CHANGELOG.md', 'CODE_OF_CONDUCT.md', 'CONTRIBUTING.md', 'lib/**/*.rb']
+  spec.files         = Dir['README.md', 'CHANGELOG.md', 'lib/**/*.rb']
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']

@@ -1,0 +1,4 @@
+---
+macros:
+  RT: https://mycompany.org/rt/Display.html?id=%<arg>s
+  HEY: hello

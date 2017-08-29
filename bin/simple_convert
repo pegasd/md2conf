@@ -3,4 +3,6 @@
 require 'bundler/setup'
 require 'md2conf'
 
-puts Md2conf.parse_markdown File.read(ARGV[0])
+abort 'Please provide a filename to convert' unless ARGV[0]
+abort "File #{ARGV[0]} doesn't exist." unless File.exists? ARGV[0]
+puts Md2conf.parse_markdown(File.read(ARGV[0]))
