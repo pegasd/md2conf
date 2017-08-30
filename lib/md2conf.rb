@@ -52,7 +52,7 @@ module Md2conf
 
         since_last_match = @html[last_position..Regexp.last_match.begin(0) - 1]
         html_new << "#{since_last_match}#{confluence_code}"
-        last_position = Regexp.last_match.end(1) + 1
+        last_position = Regexp.last_match.end(0)
       end
 
       # Did we have at least one match?
