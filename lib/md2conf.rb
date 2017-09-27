@@ -155,6 +155,7 @@ module Md2conf
     #
     # Use @max_toc_level class variable to specify maximum header depth.
     def add_toc
+      return if @max_toc_level == 0
       @html = <<~HTML
         <ac:structured-macro ac:name="toc">
           <ac:parameter ac:name="maxLevel">#{@max_toc_level}</ac:parameter>
