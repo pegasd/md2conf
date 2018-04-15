@@ -193,7 +193,14 @@ module Md2conf
       markdown = markdown.lines.drop(1).join
     end
 
-    md         = Redcarpet::Markdown.new(Redcarpet::Render::XHTML.new, tables: true, fenced_code_blocks: true, autolink: true)
+    redcarpet_options = {
+      tables:             true,
+      fenced_code_blocks: true,
+      autolink:           true,
+      strikethrough:      true,
+    }
+
+    md         = Redcarpet::Markdown.new(Redcarpet::Render::XHTML.new, redcarpet_options)
     html       = md.render(markdown)
     confluence = ConfluenceUtil.new(html, max_toc_level, config_file)
     confluence.parse

@@ -60,4 +60,11 @@ RSpec.describe Md2conf do
       /hello/
     )
   end
+
+  it 'supports markdown strikethrough' do
+    md = '~~woot~~'
+    expect(
+      Md2conf.parse_markdown(md, config_file: 'spec/fixtures/config.yaml')
+    ).to match(%r{<del>woot</del>})
+  end
 end
