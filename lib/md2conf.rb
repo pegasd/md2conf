@@ -22,9 +22,9 @@ module Md2conf
     end
 
     # Launch all internal parsers.
-    def parse
+    def parse(mentions: true)
       process_macros if @macros
-      process_mentions
+      process_mentions if mentions
       convert_info_macros
       process_code_blocks
       add_toc
@@ -188,7 +188,7 @@ module Md2conf
   # @param [Integer] max_toc_level Table of Contents maximum header depth.
   #
   # @return [String] Confluence Storage Format document.
-  def self.parse_markdown(markdown, cut_header: true, max_toc_level: 7, config_file: '~/.md2conf.yaml')
+  def self.parse_markdown(markdown, cut_header: true, max_toc_level: 7, config_file: '~/.md2conf.yaml', user_mentions: true)
     if cut_header && markdown.start_with?('# ')
       markdown = markdown.lines.drop(1).join
     end
@@ -203,6 +203,6 @@ module Md2conf
     md         = Redcarpet::Markdown.new(Redcarpet::Render::XHTML.new, redcarpet_options)
     html       = md.render(markdown)
     confluence = ConfluenceUtil.new(html, max_toc_level, config_file)
-    confluence.parse
+    confluence.parse(mentions: user_mentions)
   end
 end
