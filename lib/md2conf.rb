@@ -45,10 +45,10 @@ module Md2conf
         macro_arg  = macro.first.split(':')[1]
 
         confluence_code = if @macros.include? macro_name
-          @macros[macro_name] % { arg: macro_arg }
-        else
-          "<code>#{macro.first}</code>"
-        end
+                            format(@macros[macro_name], arg: macro_arg)
+                          else
+                            "<code>#{macro.first}</code>"
+                          end
 
         since_last_match = @html[last_position..Regexp.last_match.begin(0) - 1]
         html_new << "#{since_last_match}#{confluence_code}"
@@ -58,10 +58,10 @@ module Md2conf
       # Did we have at least one match?
       return unless Regexp.last_match
       @html = html_new << if inside_code_block Regexp.last_match.pre_match
-        @html[last_position..-1]
-      else
-        Regexp.last_match.post_match
-      end
+                            @html[last_position..-1]
+                          else
+                            Regexp.last_match.post_match
+                          end
     end
 
     # Process username mentions.
@@ -83,10 +83,10 @@ module Md2conf
       # Did we have at least one match?
       return unless Regexp.last_match
       @html = html_new << if inside_code_block Regexp.last_match.pre_match
-        @html[last_position..-1]
-      else
-        Regexp.last_match.post_match
-      end
+                            @html[last_position..-1]
+                          else
+                            Regexp.last_match.post_match
+                          end
     end
 
     # Convert Info macros to Confluence-friendly format:
@@ -133,10 +133,10 @@ module Md2conf
         content = codeblock.match(%r{<pre><code.*?>(.*?)</code></pre>}m)[1]
         lang    = codeblock.match(/code class="(.*)"/)
         lang    = if lang.nil?
-          'none'
-        else
-          lang[1].sub('puppet', 'ruby')
-        end
+                    'none'
+                  else
+                    lang[1].sub('puppet', 'ruby')
+                  end
 
         confluence_code = <<~HTML
           <ac:structured-macro ac:name="code">
@@ -155,7 +155,7 @@ module Md2conf
     #
     # Use @max_toc_level class variable to specify maximum header depth.
     def add_toc
-      return if @max_toc_level == 0
+      return if @max_toc_level.zero?
       @html = <<~HTML
         <ac:structured-macro ac:name="toc">
           <ac:parameter ac:name="maxLevel">#{@max_toc_level}</ac:parameter>
@@ -189,9 +189,7 @@ module Md2conf
   #
   # @return [String] Confluence Storage Format document.
   def self.parse_markdown(markdown, cut_header: true, max_toc_level: 7, config_file: '~/.md2conf.yaml', user_mentions: true)
-    if cut_header && markdown.start_with?('# ')
-      markdown = markdown.lines.drop(1).join
-    end
+    markdown = markdown.lines.drop(1).join if cut_header && markdown.start_with?('# ')
 
     redcarpet_options = {
       tables:             true,
