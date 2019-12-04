@@ -1,6 +1,6 @@
 # Md2conf
 
-Confverts Markdown to Confluence storage format
+Converts Markdown to Confluence storage format
 
 ## Installation
 
